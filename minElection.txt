@@ -1,0 +1,162 @@
+程序代码：
+#include<stdio.h>
+#include<stdlib.h>
+#include<ctime>
+
+struct Candidates{
+	char name[20];
+	int num;
+	int vote;
+};
+
+void poll(Candidates candidate[1000],int n,int m,int vote[1000]);
+void rank(Candidates candidate[1000],int n,int m);
+void save(Candidates candidate[1000],int n,int m,int vote[1000]);
+
+int main(){
+	struct Candidates candidate[1000];
+	int i,n,m,vote[1000],num;
+	char ch;
+	
+	printf("=============班干选举系统=============\n");
+
+	while(1)
+	{
+		printf("\n");
+		printf("请输入候选人的人数：");
+		scanf("%d",&n); 
+		for(i=0;i<n;i++)
+		{
+			printf("请输入第%d位候选人的名字：",i+1);
+			scanf("%s",candidate[i].name);
+			srand(time(0));
+			num=rand()%100;
+			candidate[i].num=num;
+		}
+		printf("\n");
+
+		printf("候选人的编号及名称：\n");
+		for(i=0;i<n;i++)
+		{
+			printf("编号：%d   名称：%s\n",candidate[i].num,candidate[i].name);
+		}
+		printf("\n");
+
+		printf("请输入选举的人数：");
+		scanf("%d",&m);
+		printf("\n");
+
+		printf("开始投票：\n");
+		printf("\n");
+		poll(candidate,n,m,vote);
+		system("pause");
+		rank(candidate,n,m);
+
+		printf("\n");
+		printf("获选人是：%s,得票数是：%d\n",candidate[0].name,candidate[0].vote);
+
+		//文件保存
+		printf("\n");
+		save(candidate,n,m,vote);
+		printf("是否继续？（Y/N）");
+		fflush(stdin);
+		ch=getchar();
+		if(ch=='N'||ch=='n')
+		{
+			break;
+		}
+	}
+
+	printf("===============感谢您的使用===============\n");
+	system("pause");
+	return 0;
+}
+
+void save(Candidates candidate[1000],int n,int m,int vote[1000])
+{
+	int i;
+	FILE *fp,*pf;
+	if((fp=fopen("vote_detail.txt","a+"))==NULL)
+	{
+		printf("Error!\n");
+		exit(1);
+	}
+	fprintf(fp,"选票信息：\n");
+	for(i=0;i<m;i++)
+	{	
+		fprintf(fp,"%d	",vote[i])	;
+	}
+	fprintf(fp,"\n");
+	fclose(fp);
+	
+	if((pf=fopen("poll_detail.txt","a+"))==NULL)
+	{
+		printf("Error!\n");
+		exit(1);
+	}
+	fprintf(pf,"统计信息：\n");
+	for(i=0;i<n;i++)
+	{
+		fprintf(pf,"名称：%s    得票数：%d\n",candidate[i].name,candidate[i].vote);
+	}
+	fprintf(pf,"\n");
+	fclose(pf);
+}
+
+void poll(Candidates candidate[1000],int n,int m,int vote[1000])
+{
+	int effective,noneffective,i,j,total;
+	effective=0;
+	noneffective=0;
+	total=m;
+	for(i=0;i<m;i++)
+	{
+		candidate[i].vote=0;
+		printf("请输入选票信息：");
+		scanf("%d",&vote[i]);
+		for(j=0;j<n;j++)
+		{
+			if(vote[i]==candidate[j].num)
+			{
+				candidate[j].vote+=1;
+				effective++;
+			}
+		}
+	}
+	
+	noneffective=total-effective;
+
+	printf("\n");
+	printf("有效票数：%d票			无效票数：%d票			总票数：%d票\n",effective,noneffective,total);
+	printf("\n");
+	printf("每个候选人的得票数：\n");
+	for(i=0;i<n;i++)
+	{
+		printf("名称：%s		得票数：%d\n",candidate[i].name,candidate[i].vote);
+	}
+}
+
+void rank(Candidates candidate[1000],int n,int m)
+{
+	int i,j,k,temp;
+	temp=0;
+	for(j=0;j<n-1;j++)
+	{
+		for(k=0;k<n-1-j;k++)
+		{
+			if(candidate[k].vote<candidate[k+1].vote)
+			{
+				temp=candidate[k].vote;
+				candidate[k].vote=candidate[k+1].vote;
+				candidate[k+1].vote=temp;
+			}
+		}
+	}
+
+	printf("\n");
+	printf("选票结果(由大到小的顺序)：\n");
+	for(i=0;i<n;i++)
+	{
+		printf("名称：%s    得票数：%d\n",candidate[i].name,candidate[i].vote);	
+	}
+}
